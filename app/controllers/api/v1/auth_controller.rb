@@ -1,6 +1,6 @@
 class Api::V1::AuthController < ApplicationController
   skip_before_action :authorized, only: [:create]
- 
+
   def create
     @user = User.find_by(username: user_login_params[:username])
     # authenticate method comes from bcrypt
@@ -11,10 +11,10 @@ class Api::V1::AuthController < ApplicationController
       render json: { message: 'Invalid username or password' }, status: :unauthorized
     end
   end
- 
+
   private
- 
+
   def user_login_params
-    params.permit(:username, :password)
+    params.permit(:username, :password, auth: {})
   end
 end
