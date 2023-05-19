@@ -37,21 +37,18 @@ class ApplicationController < ActionController::API
   end
 
   def revoke_token(token)
-    expiration = 24.hours.to_i # Set the expiration time as per your requirements
-
+    expiration = 24.hours.to_i
     begin
       JwtBlacklist.new.revoke(token, expiration)
-    rescue => exception
-      nil
+    rescue Exception => error
+      puts error
     end
-    # Handle the response accordingly
+
   end
 
   def is_revoked?
-    if JwtBlacklist.new.revoked?(request.headers['Authorization'])
-      render json: { error: 'Token revoked' }, status: :unauthorized
-    else
-      # some action maybe
-    end
+    return unless JwtBlacklist.new.revoked?(request.headers['Authorization'])
+
+    render json: { error: 'Token revoked' }, status: :unauthorized
   end
 end
