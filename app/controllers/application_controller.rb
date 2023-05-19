@@ -2,6 +2,7 @@ class ApplicationController < ActionController::API
   before_action :authorized
 
   def encode_token(payload)
+    payload[:jti] = SecureRandom.hex(16)
     JWT.encode(payload, Rails.application.credentials.jwt_secret, 'HS256')
   end
 
@@ -16,8 +17,8 @@ class ApplicationController < ActionController::API
 
     begin
       JWT.decode(token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
-    rescue StandardError => e
-      puts e
+    rescue StandardError => error
+      puts error
     end
   end
 
@@ -33,22 +34,21 @@ class ApplicationController < ActionController::API
   end
 
   def authorized
-    render json: { message: 'Please log in' }, status: :unauthorized unless logged_in?
+    render json: { message: 'Please log in', revoked: is_revoked? }, status: :unauthorized unless logged_in?
   end
 
   def revoke_token(token)
-    expiration = 24.hours.to_i
     begin
-      JwtBlacklist.new.revoke(token, expiration)
-    rescue Exception => error
+      JwtBlacklist.new.revoke(token)
+    rescue StandardError => error
       puts error
     end
-
   end
 
   def is_revoked?
-    return unless JwtBlacklist.new.revoked?(request.headers['Authorization'])
+    return unless auth_header
 
-    render json: { error: 'Token revoked' }, status: :unauthorized
+    token = auth_header.split(' ')[1]
+    JwtBlacklist.new.revoked?(token)
   end
 end

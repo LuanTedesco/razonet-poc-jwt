@@ -5,11 +5,11 @@ class JwtBlacklist
     @redis = REDIS
   end
 
-  def revoke(token, expiration)
-    @redis.setex(token, expiration, 'revoked')
+  def revoke(token)
+    @redis.set(token, 'revoked')
   end
 
   def revoked?(token)
-    @redis.get(token) == 'revoked'
+    @redis.get(token).eql?('revoked')
   end
 end

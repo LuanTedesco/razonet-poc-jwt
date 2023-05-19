@@ -12,6 +12,14 @@ class Api::V1::AuthController < ApplicationController
     end
   end
 
+  def destroy_session
+    return unless auth_header
+
+    token = auth_header.split(' ')[1]
+    revoke_token(token)
+    render json: { message: 'Session Destroyed Successfully' }, status: :accepted
+  end
+
   private
 
   def user_login_params
