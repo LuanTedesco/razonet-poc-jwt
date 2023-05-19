@@ -22,7 +22,7 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    return unless decoded_token && decoded_token[0]['exp'] > Time.now.to_i
+    return unless decoded_token && is_revoked?
 
     user_id = decoded_token[0]['user_id']
     @user = User.find_by(id: user_id)
@@ -45,5 +45,13 @@ class ApplicationController < ActionController::API
       nil
     end
     # Handle the response accordingly
+  end
+
+  def is_revoked?
+    if JwtBlacklist.new.revoked?(request.headers['Authorization'])
+      render json: { error: 'Token revoked' }, status: :unauthorized
+    else
+      # some action maybe
+    end
   end
 end
