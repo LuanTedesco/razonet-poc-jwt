@@ -17,8 +17,10 @@ class ApplicationController < ActionController::API
 
     begin
       JWT.decode(token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
-    rescue StandardError => error
-      puts error
+    rescue JWT::DecodeError => error
+      puts "JWT error: #{error.message}"
+    rescue JWT::ExpiredSignature => error
+      puts "JWT error: #{error.message}"
     end
   end
 
@@ -40,8 +42,8 @@ class ApplicationController < ActionController::API
   def revoke_token(token)
     begin
       JwtBlacklist.new.revoke(token)
-    rescue StandardError => error
-      puts error
+    rescue Redis::CannotConnectError => error
+      puts "Redis error: #{error.message}"
     end
   end
 
