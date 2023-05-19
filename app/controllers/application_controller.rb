@@ -22,7 +22,7 @@ class ApplicationController < ActionController::API
   end
 
   def current_user
-    return unless decoded_token && is_revoked?
+    return unless decoded_token && !is_revoked?
 
     user_id = decoded_token[0]['user_id']
     @user = User.find_by(id: user_id)
