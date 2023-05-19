@@ -2,10 +2,7 @@ class ApplicationController < ActionController::API
   before_action :authorized
 
   def encode_token(payload)
-    exp = Time.now.to_i + 4 * 3600
-    exp_payload = { data: 'data', exp: exp, user_id: payload[:user_id] }
-
-    JWT.encode(exp_payload, Rails.application.credentials.jwt_secret, 'HS256')
+    JWT.encode(payload, Rails.application.credentials.jwt_secret, 'HS256')
   end
 
   def auth_header
@@ -37,5 +34,16 @@ class ApplicationController < ActionController::API
 
   def authorized
     render json: { message: 'Please log in' }, status: :unauthorized unless logged_in?
+  end
+
+  def revoke_token(token)
+    expiration = 24.hours.to_i # Set the expiration time as per your requirements
+
+    begin
+      JwtBlacklist.new.revoke(token, expiration)
+    rescue => exception
+      nil
+    end
+    # Handle the response accordingly
   end
 end
