@@ -1,0 +1,3 @@
+class JwtTokenlist < ApplicationRecord
+  
+end

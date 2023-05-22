@@ -2,7 +2,7 @@ module Api
   module V1
     class AuthController < ApiController
       skip_before_action :authorized, only: [:create]
-      before_action :set_token, only: [:destroy_session]
+      before_action :set_token, only: [:destroy_session, :destroy_all_sessions]
 
       def create
         @user = User.find_by(username: user_login_params[:username])
@@ -20,6 +20,13 @@ module Api
 
         revoke_token
         render json: { message: 'Session Destroyed Successfully' }, status: :accepted
+      end
+
+      def destroy_all_sessions
+        return unless auth_header
+
+        revoke_all_tokens
+        render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
       end
 
       private
