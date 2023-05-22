@@ -32,7 +32,7 @@ module Api
       token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id']).first
       if token['revoked'] == false and token['exp'] > Time.now.to_i
         return @user = User.find_by(id: token['user_id'])
-      else 
+      else
         return @user = nil
       end
     end
@@ -52,10 +52,8 @@ module Api
     end
 
     def revoke_all_tokens
-      tokens = JwtTokenlist.where(user_id: decoded_token[0]['user_id'])
-      for token in tokens do
-        token.update(revoked: true)
-      end
+      token = decoded_token[0]['user_id']
+      JwtTokenlist.where(user_id: token).update_all(revoked: true)
     end
 
     def is_revoked?
@@ -64,9 +62,9 @@ module Api
       decoded_token = JWT.decode(@token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
       token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id'])
       if token.empty?
-        return true
-      else
-        return false if token[0].revoked == false and token[0].exp > Time.now.to_i
+        true
+      elsif token[0].revoked == false && token[0].exp > Time.now.to_i
+        false
       end
     end
 
@@ -74,6 +72,7 @@ module Api
 
     def set_token
       return unless auth_header
+
       @token = auth_header.split(' ')[1]
     end
   end
