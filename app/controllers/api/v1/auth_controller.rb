@@ -6,9 +6,11 @@ module Api
 
       def create
         user = User.find_by(username: user_login_params[:username])
-        # authenticate method comes from bcrypt
+
         if user && user.authenticate(user_login_params[:password])
           token = encode_token({ user_id: user.id })
+
+          save_token(token, user.id)
           render json: { user: UserSerializer.new(user), token: token }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized

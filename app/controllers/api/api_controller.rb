@@ -1,12 +1,10 @@
 module Api
   class ApiController < ApplicationController
-    before_action :set_token, only: %i[current_user authorized]
     before_action :authorized
 
     def encode_token(payload)
       payload[:jti] = SecureRandom.hex(16)
       payload[:exp] = 30.days.from_now.to_i
-      JwtTokenlist.create(jti: payload[:jti], user_id: payload[:user_id], exp: payload[:exp])
       JWT.encode(payload, Rails.application.credentials.jwt_secret, 'HS256')
     end
 
@@ -27,13 +25,11 @@ module Api
     end
 
     def current_user
-      return unless decoded_token
+      set_token
+      return unless decoded_token and decoded_token[0]['exp'] > Time.now.to_i
 
-      token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id']).first
-      if token['revoked'] == false and token['exp'] > Time.now.to_i
-        return @user = User.find_by(id: token['user_id'])
-      else 
-        return @user = nil
+      if JwtAllowlist.new.is_valid?(@token)
+        @user = User.find_by(id: decoded_token[0]['user_id'])
       end
     end
 
@@ -42,32 +38,19 @@ module Api
     end
 
     def authorized
-      set_token
-      render json: { message: 'Please log in', revoked: is_revoked? }, status: :unauthorized unless logged_in?
+      render json: { message: 'Please login' }, status: :unauthorized unless logged_in?
+    end
+
+    def save_token(token, user_id)
+      JwtAllowlist.new.save(token, user_id)
     end
 
     def revoke_token
-      token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id']).first
-      token.update(revoked: true)
+      JwtAllowlist.new.revoke(@token)
     end
 
     def revoke_all_tokens
-      tokens = JwtTokenlist.where(user_id: decoded_token[0]['user_id'])
-      for token in tokens do
-        token.update(revoked: true)
-      end
-    end
-
-    def is_revoked?
-      return unless auth_header
-
-      decoded_token = JWT.decode(@token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
-      token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id'])
-      if token.empty?
-        return true
-      else
-        return false if token[0].revoked == false and token[0].exp > Time.now.to_i
-      end
+      JwtAllowlist.new.revoke_all(decoded_token[0]['user_id'])
     end
 
     private
