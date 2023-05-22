@@ -50,22 +50,7 @@ module Api
     end
 
     def revoke_all_tokens
-      tokens = JwtTokenlist.where(user_id: decoded_token[0]['user_id'])
-      for token in tokens do
-        token.update(revoked: true)
-      end
-    end
-
-    def is_revoked?
-      return unless auth_header
-
-      decoded_token = JWT.decode(@token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
-      token = JwtTokenlist.where(jti: decoded_token[0]['jti'], user_id: decoded_token[0]['user_id'])
-      if token.empty?
-        return true
-      else
-        return false if token[0].revoked == false and token[0].exp > Time.now.to_i
-      end
+      JwtAllowlist.new.revoke_all(decoded_token[0]['user_id'])
     end
 
     private
