@@ -84,6 +84,3 @@ production:
   database: razonet_poc_jwt_production
   username: razonet_poc_jwt
   password: <%= ENV["RAZONET_POC_JWT_DATABASE_PASSWORD"] %>
-
-redis:
-  url: <%= ENV.fetch("REDIS_URL") { "redis://localhost:6379/1" } %>

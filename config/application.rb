@@ -1,11 +1,9 @@
 require_relative "boot"
-require 'dotenv/rails-now'
 require "rails/all"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
-Dotenv::Railtie.load
 
 module RazonetPocJwt
   class Application < Rails::Application
@@ -24,7 +22,5 @@ module RazonetPocJwt
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-    config.autoload_paths << Rails.root.join('app', 'lib')
-    config.cache_store = :redis_cache_store, { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
   end
 end
