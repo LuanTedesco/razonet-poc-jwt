@@ -5,32 +5,24 @@ module Api
     def encode_token(payload)
       payload[:jti] = SecureRandom.hex(16)
       payload[:exp] = 30.days.from_now.to_i
-      JWT.encode(payload, Rails.application.credentials.jwt_secret, 'HS256')
-    end
-
-    def auth_header
-      request.headers['Authorization']
+      JWT.encode(payload, jwt_secret, 'HS256')
     end
 
     def decoded_token
       return unless auth_header
 
       begin
-        JWT.decode(@token, Rails.application.credentials.jwt_secret, true, algorithm: 'HS256')
-      rescue JWT::DecodeError => error
-        puts "JWT error: #{error.message}"
-      rescue JWT::ExpiredSignature => error
+        JWT.decode(@token, jwt_secret, true, algorithm: 'HS256')
+      rescue JWT::DecodeError, JWT::ExpiredSignature => error
         puts "JWT error: #{error.message}"
       end
     end
 
     def current_user
       set_token
-      return unless decoded_token and decoded_token[0]['exp'] > Time.now.to_i
+      return unless decoded_token and decoded_token.first['exp'] > Time.now.to_i
 
-      if JwtAllowlist.new.is_valid?(@token)
-        @user = User.find_by(id: decoded_token[0]['user_id'])
-      end
+      @user ||= User.find_by(id: decoded_token.first['user_id']) if JwtAllowlist.new.is_valid?(@token)
     end
 
     def logged_in?
@@ -50,7 +42,8 @@ module Api
     end
 
     def revoke_all_tokens
-      JwtAllowlist.new.revoke_all(decoded_token[0]['user_id'])
+      user_id = decoded_token.first['user_id']
+      JwtAllowlist.new.revoke_all(user_id)
     end
 
     private
@@ -58,7 +51,15 @@ module Api
     def set_token
       return unless auth_header
 
-      @token = auth_header.split(' ')[1]
+      @token ||= auth_header.split(' ').last
+    end
+
+    def jwt_secret
+      Rails.application.credentials.jwt_secret
+    end
+
+    def auth_header
+      request.headers['Authorization']
     end
   end
 end
