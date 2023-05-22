@@ -10,19 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_22_123313) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_22_201321) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "jwt_tokenlists", force: :cascade do |t|
-    t.string "jti", null: false
-    t.bigint "exp", null: false
-    t.boolean "revoked", default: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "user_id"
-    t.index ["user_id"], name: "index_jwt_tokenlists_on_user_id"
-  end
 
   create_table "users", force: :cascade do |t|
     t.string "username"
