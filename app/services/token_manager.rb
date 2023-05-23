@@ -5,8 +5,6 @@ class TokenManager < ApplicationController
   end
 
   def encode_token
-    puts 'AAAAAAAAAAAAAAAAAA'
-    puts @payload
     @payload[:jti] = SecureRandom.hex(16)
     @payload[:exp] = 30.days.from_now.to_i
     JWT.encode(@payload, jwt_secret, 'HS256')
