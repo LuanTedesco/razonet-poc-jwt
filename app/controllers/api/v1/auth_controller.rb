@@ -1,16 +1,18 @@
+require './app/services/token_manager'
+
 module Api
   module V1
     class AuthController < ApiController
       skip_before_action :authorized, only: [:create]
-      before_action :set_token, only: %i[destroy_session destroy_all_sessions]
+      before_action :set_token, only: %i[destroy_session destroy_all_sessions sessions]
 
       def create
         user = User.find_by(username: user_login_params[:username])
 
         if user&.authenticate(user_login_params[:password])
-          token = encode_token({ user_id: user.id })
+          token = TokenManager.new(payload: { user_id: user.id }).encode_token
 
-          save_token(token, user.id)
+          TokenManager.new(token: token).save_token
           render json: { user: UserSerializer.new(user), token: token }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized
@@ -20,21 +22,24 @@ module Api
       def destroy_session
         return unless auth_header
 
-        revoke_token
+        TokenManager.revoke_token({ token: @token })
         render json: { message: 'Session Destroyed Successfully' }, status: :accepted
       end
 
       def destroy_all_sessions
         return unless auth_header
 
-        revoke_all_tokens
+        TokenManager.revoke_all_tokens({ token: @token })
         render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
       end
 
       def sessions
         return unless auth_header
 
-        render json: { message: 'Active Sessions', sessions: active_sessions }, status: :accepted
+        render json: {
+          message: 'Active Sessions',
+          sessions: SessionManager.active_sessions({ token: @token })
+        }, status: :accepted
       end
 
       private
