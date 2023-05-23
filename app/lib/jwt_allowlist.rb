@@ -27,6 +27,15 @@ class JwtAllowlist
     end
   end
 
+  def revoke_all_by_id(user_id)
+    tokens = @redis.keys("#{KEY_PREFIX}*")
+    
+    tokens.each do |token|
+      hash = @redis.hgetall(token)
+      @redis.del(token) if hash['user_id'] == user_id.to_s
+    end
+  end
+
   def is_valid?(token)
     @redis.exists(token) && @redis.ttl(key(token)).positive?
   end

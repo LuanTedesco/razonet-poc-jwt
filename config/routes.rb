@@ -9,6 +9,7 @@ Rails.application.routes.draw do
       get '/user', to: 'users#profile'
       put '/user', to: 'users#update'
       delete '/user', to: 'users#destroy'
+      post '/logout_all_by_id', to: 'auth#destroy_all_sessions_by_id'
     end
   end
 end

@@ -33,6 +33,18 @@ module Api
         render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
       end
 
+      def destroy_all_sessions_by_id
+        return unless auth_header
+        
+        user = SessionManager.new(token: @token).current_user
+        if user.admin?
+          TokenManager.new(user_id: params[:user_id]).revoke_all_tokens_by_id
+          render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
+        else
+          render json: { error: 'Unauthorized' }, status: :not_acceptable
+        end
+      end
+
       def sessions
         return unless auth_header
 
