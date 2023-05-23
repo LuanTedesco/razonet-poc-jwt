@@ -1,5 +1,3 @@
-require './app/services/session_manager'
-
 module Api
   class ApiController < ApplicationController
     before_action :authorized
