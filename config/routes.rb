@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       get '/logout', to: 'auth#destroy_session'
       get '/logout_all', to: 'auth#destroy_all_sessions'
       get '/user', to: 'users#profile'
+      get '/sessions', to: 'auth#sessions'
     end
   end
 end

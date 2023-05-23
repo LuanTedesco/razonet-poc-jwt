@@ -18,6 +18,11 @@ module Api
       end
     end
 
+    def active_sessions
+      user_id = decoded_token.first['user_id']
+      JwtAllowlist.new.active_sessions(user_id)
+    end
+
     def current_user
       set_token
       return unless decoded_token and decoded_token.first['exp'] > Time.now.to_i
