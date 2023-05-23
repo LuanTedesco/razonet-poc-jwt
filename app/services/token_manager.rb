@@ -29,7 +29,7 @@ class TokenManager < ApplicationController
   end
 
   def revoke_all_tokens
-    user_id = decoded_token( token: @token ).first['user_id']
+    user_id = TokenManager.new( token: @token ).decoded_token.first['user_id']
     JwtAllowlist.new.revoke_all(user_id)
   end
 

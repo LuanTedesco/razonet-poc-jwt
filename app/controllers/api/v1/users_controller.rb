@@ -2,17 +2,18 @@ module Api
   module V1
     class UsersController < ApiController
       skip_before_action :authorized, only: [:create]
+      before_action :set_token, only: [:profile]
 
       def profile
-        render json: { user: UserSerializer.new(current_user) }, status: :accepted
+        render json: { user: UserSerializer.new(SessionManager.new(token: @token).current_user) }, status: :accepted
       end
 
       def create
         user = User.create(user_params)
         if user.valid?
-          token = TokenManager.encode_token(user_id: user.id)
+          token = TokenManager.new(payload: { user_id: user.id }).encode_token
 
-          TokenManager.save_token(token, user.id)
+          TokenManager.new(token: token).save_token
           render json: { user: UserSerializer.new(user), token: token }, status: :created
         else
           render json: { error: 'Failed to create user' }, status: :not_acceptable

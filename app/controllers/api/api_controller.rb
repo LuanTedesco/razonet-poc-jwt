@@ -2,11 +2,17 @@ require './app/services/session_manager'
 
 module Api
   class ApiController < ApplicationController
-    before_action :authorized
     before_action :set_token
+    before_action :authorized
 
     def authorized
-      render json: { message: 'Please login' }, status: :unauthorized unless SessionManager.logged_in?(token: @token)
+      set_token
+      puts SessionManager.new(token: @token).logged_in?
+      return unless !SessionManager.new(token: @token).logged_in?
+
+      render json: {
+        message: 'Please login'
+      }, status: :unauthorized
     end
 
     private
