@@ -5,8 +5,10 @@ Rails.application.routes.draw do
       post '/login', to: 'auth#create'
       get '/logout', to: 'auth#destroy_session'
       get '/logout_all', to: 'auth#destroy_all_sessions'
-      get '/user', to: 'users#profile'
       get '/sessions', to: 'auth#sessions'
+      get '/user', to: 'users#profile'
+      put '/user', to: 'users#update'
+      delete '/user', to: 'users#destroy'
     end
   end
 end
