@@ -29,7 +29,7 @@ class JwtAllowlist
 
   def revoke_all_by_id(user_id)
     tokens = @redis.keys("#{KEY_PREFIX}*")
-    
+
     tokens.each do |token|
       hash = @redis.hgetall(token)
       @redis.del(token) if hash['user_id'] == user_id.to_s
@@ -48,7 +48,7 @@ class JwtAllowlist
       hash = @redis.hgetall(token)
       if hash['user_id'] == user_id.to_s
         session = {
-          token: token,
+          token: token.split(':').last,
           user_id: hash['user_id']
         }
         sessions << session
