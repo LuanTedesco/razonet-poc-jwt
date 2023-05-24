@@ -17,9 +17,16 @@ module Api
           }
 
           token = TokenManager.new(payload: payload).encode_token
-
           TokenManager.new(token: token).save_token
-          render json: { user: UserSerializer.new(user), token: token }, status: :accepted
+          
+          render json: { 
+            user: UserSerializer.new(user), 
+            session: {
+              token: token,
+              ip_address: user_login_params[:ip_address],
+              date: Time.zone.now
+            } 
+          }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized
         end
