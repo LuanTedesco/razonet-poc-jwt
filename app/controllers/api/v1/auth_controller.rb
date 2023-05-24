@@ -15,16 +15,18 @@ module Api
             ip_address: user_login_params[:ip_address],
             date: Time.zone.now
           }).encode_token
-          
+
           TokenManager.new(token: token).save_token
 
           render json: { 
-            user: UserSerializer.new(user), 
-            token: token,
-            session: {
-              ip_address: user_login_params[:ip_address],
-              date: Time.zone.now
+            user: {
+              profile: UserSerializer.new(user),
+              session: {
+                ip_address: user_login_params[:ip_address],
+                date: Time.zone.now
+              }
             } 
+            token: token, 
           }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized
