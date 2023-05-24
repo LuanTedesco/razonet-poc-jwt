@@ -49,8 +49,7 @@ class JwtAllowlist
         hash = @redis.hgetall(token)
         if hash['user_id'] == user_id.to_s
           session = {
-            token: token.split(':').last,
-            user_id: hash['user_id']
+            token: token.split(':').last
           }
           sessions << session
         end

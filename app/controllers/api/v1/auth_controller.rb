@@ -10,7 +10,13 @@ module Api
         user = User.find_by(username: user_login_params[:username])
 
         if user&.authenticate(user_login_params[:password])
-          token = TokenManager.new(payload: { user_id: user.id }).encode_token
+          payload = {
+            user_id: user.id,
+            ip_address: user_login_params[:ip_address],
+            date: Time.zone.now
+          }
+
+          token = TokenManager.new(payload: payload).encode_token
 
           TokenManager.new(token: token).save_token
           render json: { user: UserSerializer.new(user), token: token }, status: :accepted
@@ -38,7 +44,7 @@ module Api
         
         user = SessionManager.new(token: @token).current_user
         if user.admin?
-          TokenManager.new(user_id: params[:user_id]).revoke_all_tokens_by_id
+          TokenManager.new(user_id: user_login_params[:user_id]).revoke_all_tokens_by_id
           render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
         else
           render json: { error: 'Unauthorized' }, status: :not_acceptable
@@ -57,7 +63,7 @@ module Api
       private
 
       def user_login_params
-        params.permit(:username, :password, auth: {})
+        params.require(:auth).permit(:username, :password, :ip_address, :user_id)
       end
     end
   end
