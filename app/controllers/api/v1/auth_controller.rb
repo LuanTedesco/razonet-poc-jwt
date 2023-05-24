@@ -25,8 +25,8 @@ module Api
                 ip_address: user_login_params[:ip_address],
                 date: Time.zone.now
               }
-            } 
-            token: token, 
+            },
+            token: token
           }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized
