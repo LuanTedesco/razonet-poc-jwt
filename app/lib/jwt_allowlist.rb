@@ -40,18 +40,20 @@ class JwtAllowlist
     @redis.exists(token) && @redis.ttl(key(token)).positive?
   end
 
-  def active_sessions(user_id)
+  def active_sessions(user_id, current_token)
     sessions = []
     tokens = @redis.keys("#{KEY_PREFIX}*")
 
     tokens.each do |token|
-      hash = @redis.hgetall(token)
-      if hash['user_id'] == user_id.to_s
-        session = {
-          token: token.split(':').last,
-          user_id: hash['user_id']
-        }
-        sessions << session
+      if token != key(current_token)
+        hash = @redis.hgetall(token)
+        if hash['user_id'] == user_id.to_s
+          session = {
+            token: token.split(':').last,
+            user_id: hash['user_id']
+          }
+          sessions << session
+        end
       end
     end
 

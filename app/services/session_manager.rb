@@ -5,7 +5,7 @@ class SessionManager < ApplicationController
 
   def active_sessions
     user_id = TokenManager.new(token: @token).decoded_token.first['user_id']
-    JwtAllowlist.new.active_sessions(user_id)
+    JwtAllowlist.new.active_sessions(user_id, @token)
   end
 
   def current_user
