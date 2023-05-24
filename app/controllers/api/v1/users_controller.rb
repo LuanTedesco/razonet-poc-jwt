@@ -10,11 +10,11 @@ module Api
           user: {
             profile: UserSerializer.new(SessionManager.new(token: @token).current_user),
             session: {
-              ip_address: user_login_params[:ip_address],
-              date: Time.zone.now
+              ip_address: decoded_token['ip_address'],
+              date: decoded_token['date'],
             }
           },
-          token: token
+          token: @token
         }, status: :accepted
       end
 
