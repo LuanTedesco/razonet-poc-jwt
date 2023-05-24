@@ -10,19 +10,18 @@ module Api
         user = User.find_by(username: user_login_params[:username])
 
         if user&.authenticate(user_login_params[:password])
-          payload = {
+          token = TokenManager.new(payload: {
             user_id: user.id,
             ip_address: user_login_params[:ip_address],
             date: Time.zone.now
-          }
-
-          token = TokenManager.new(payload: payload).encode_token
-          TokenManager.new(token: token).save_token
+          }).encode_token
           
+          TokenManager.new(token: token).save_token
+
           render json: { 
             user: UserSerializer.new(user), 
+            token: token,
             session: {
-              token: token,
               ip_address: user_login_params[:ip_address],
               date: Time.zone.now
             } 
