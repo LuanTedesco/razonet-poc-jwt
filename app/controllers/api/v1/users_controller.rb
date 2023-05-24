@@ -6,13 +6,16 @@ module Api
 
       def profile
         decoded_token = TokenManager.new(token: @token).decoded_token.first
-        render json: { 
-          user: UserSerializer.new(SessionManager.new(token: @token).current_user), 
-          session: {
-            token: @token,
-            ip_address: decoded_token['ip_address'],
-            date: decoded_token['date']
-        } }, status: :accepted
+        render json: {
+          user: {
+            profile: UserSerializer.new(SessionManager.new(token: @token).current_user),
+            session: {
+              ip_address: user_login_params[:ip_address],
+              date: Time.zone.now
+            }
+          },
+          token: token
+        }, status: :accepted
       end
 
       def create
