@@ -5,7 +5,14 @@ module Api
       before_action :set_token, only: %i[profile update destroy]
 
       def profile
-        render json: { user: UserSerializer.new(SessionManager.new(token: @token).current_user) }, status: :accepted
+        decoded_token = TokenManager.new(token: @token).decoded_token.first
+        render json: { 
+          user: UserSerializer.new(SessionManager.new(token: @token).current_user), 
+          session: {
+            token: @token,
+            ip_address: decoded_token['ip_address'],
+            date: decoded_token['date']
+        } }, status: :accepted
       end
 
       def create
