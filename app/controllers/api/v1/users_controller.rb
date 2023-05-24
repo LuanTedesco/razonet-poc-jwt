@@ -11,10 +11,7 @@ module Api
       def create
         user = User.create(user_params)
         if user.valid?
-          token = TokenManager.new(payload: { user_id: user.id }).encode_token
-
-          TokenManager.new(token: token).save_token
-          render json: { user: UserSerializer.new(user), token: token }, status: :created
+          render json: { message: 'User created successfully', message: UserSerializer.new(user) }, status: :created
         else
           render json: { error: 'Failed to create user' }, status: :not_acceptable
         end
