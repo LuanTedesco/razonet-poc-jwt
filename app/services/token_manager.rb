@@ -2,7 +2,7 @@ class TokenManager < ApplicationController
   def initialize(options = {})
     @token = options.fetch(:token) if options.key?(:token)
     @payload = options.fetch(:payload) if options.key?(:payload)
-    @user_id = options.fetch(:user_id) if options.key?(:user_id)
+    @user_id = decoded_token.first['user_id'] if options.key?(:token) && decoded_token
   end
 
   def encode_token
@@ -18,22 +18,19 @@ class TokenManager < ApplicationController
   end
 
   def save_token
-    hash = TokenManager.new(token: @token).decoded_token
-    user_id = hash.first['user_id']
-    JwtAllowlist.new.save(@token, user_id)
+    JwtAllowlist.new.save(@user_id, @token)
   end
 
   def revoke_token
-    JwtAllowlist.new.revoke(@token)
+    JwtAllowlist.new.revoke(@user_id, @token)
   end
 
   def revoke_all_tokens
-    user_id = TokenManager.new( token: @token ).decoded_token.first['user_id']
-    JwtAllowlist.new.revoke_all(user_id, @token)
+    JwtAllowlist.new.revoke_all(@user_id, @token)
   end
 
-  def revoke_all_tokens_by_id
-    JwtAllowlist.new.revoke_all_by_id(@user_id)
+  def revoke_all_tokens_by_id(user_id)
+    JwtAllowlist.new.revoke_all_by_id(user_id)
   end
 
   private

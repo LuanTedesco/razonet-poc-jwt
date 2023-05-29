@@ -3,56 +3,51 @@ require 'redis'
 class JwtAllowlist
   KEY_PREFIX = 'token:'.freeze
 
-  def initialize
+  def initialize(options = {})
     @redis = REDIS
   end
 
-  def save(token, user_id, expiration = 30.days.to_i)
-    @redis.hset(key(token), 'user_id', user_id)
-    @redis.expire(key(token), expiration)
+  def save(user_id, token, expiration = 30.days.to_i)
+    @redis.set(key(user_id, token), token)
+    @redis.expire(key(user_id, token), expiration)
   end
 
-  def revoke(token)
-    @redis.del(key(token))
+  def revoke(user_id, token)
+    @redis.del(key(user_id, token))
   end
 
   def revoke_all(user_id, current_token)
-    tokens = @redis.keys("#{KEY_PREFIX}*")
+    tokens = @redis.keys("#{KEY_PREFIX + user_id.to_s}:*")
 
     tokens.each do |token|
-      if token != key(current_token)
-        hash = @redis.hgetall(token)
-        @redis.del(token) if hash['user_id'] == user_id.to_s
+      if token.split(':').last != current_token
+        @redis.del(token)
       end
     end
   end
 
-  def revoke_all_by_id(user_id)
-    tokens = @redis.keys("#{KEY_PREFIX}*")
+  def revoke_all_by_id(user_id, token)
+    tokens = @redis.keys("#{KEY_PREFIX + user_id.to_s}:*")
 
     tokens.each do |token|
-      hash = @redis.hgetall(token)
-      @redis.del(token) if hash['user_id'] == user_id.to_s
+      @redis.del(token)
     end
   end
 
-  def is_valid?(token)
-    @redis.exists(token) && @redis.ttl(key(token)).positive?
+  def is_valid?(user_id, token)
+    @redis.exists(key(user_id, token))
   end
 
   def active_sessions(user_id, current_token)
     sessions = []
-    tokens = @redis.keys("#{KEY_PREFIX}*")
+    tokens = @redis.keys("#{KEY_PREFIX + user_id.to_s}:*")
 
     tokens.each do |token|
-      if token != key(current_token)
-        hash = @redis.hgetall(token)
-        if hash['user_id'] == user_id.to_s
-          session = {
-            token: token.split(':').last
-          }
-          sessions << session
-        end
+      if token.split(':').last != current_token
+        session = {
+          token: token.split(':').last
+        }
+        sessions << session
       end
     end
 
@@ -61,7 +56,7 @@ class JwtAllowlist
 
   private
 
-  def key(token)
-    KEY_PREFIX + token
+  def key(user_id, token)
+    KEY_PREFIX + user_id.to_s +  ':' + token.to_s
   end
 end
