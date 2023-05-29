@@ -3,6 +3,7 @@ Rails.application.routes.draw do
     namespace :v1, path: :auth do
       resources :users, only: [:create]
       post '/login', to: 'auth#create'
+      post '/login_phone', to: 'auth_phone#create'
       get '/logout', to: 'auth#destroy_session'
       get '/logout_all', to: 'auth#destroy_all_sessions'
       get '/sessions', to: 'auth#sessions'
