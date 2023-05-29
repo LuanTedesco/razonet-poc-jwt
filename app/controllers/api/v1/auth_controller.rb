@@ -7,12 +7,12 @@ module Api
       before_action :set_token, only: %i[destroy_session destroy_all_sessions sessions]
 
       def create
-        user = User.find_by(username: user_login_params[:username])
+        user = User.find_by(username: user_params[:username])
 
-        if user&.authenticate(user_login_params[:password])
+        if user&.authenticate(user_params[:password])
           token = TokenManager.new(payload: {
             user_id: user.id,
-            ip_address: user_login_params[:ip_address],
+            ip_address: user_params[:ip_address],
             date: Time.zone.now
           }).encode_token
 
@@ -22,7 +22,7 @@ module Api
             user: {
               profile: UserSerializer.new(user),
               session: {
-                ip_address: user_login_params[:ip_address],
+                ip_address: user_params[:ip_address],
                 date: Time.zone.now
               }
             },
@@ -46,7 +46,7 @@ module Api
       def destroy_all_sessions_by_id
         user = SessionManager.new(token: @token).current_user
         if user.admin?
-          TokenManager.new(user_id: user_login_params[:user_id]).revoke_all_tokens_by_id
+          TokenManager.new.revoke_all_tokens_by_id(user_params[:user_id])
           render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
         else
           render json: { error: 'Unauthorized' }, status: :not_acceptable
@@ -62,7 +62,7 @@ module Api
 
       private
 
-      def user_login_params
+      def user_params
         params.require(:auth).permit(:username, :password, :ip_address, :user_id)
       end
     end
