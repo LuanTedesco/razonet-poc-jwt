@@ -34,22 +34,16 @@ module Api
       end
 
       def destroy_session
-        return unless auth_header
-
         TokenManager.new(token: @token).revoke_token
         render json: { message: 'Session Destroyed Successfully' }, status: :accepted
       end
 
       def destroy_all_sessions
-        return unless auth_header
-
         TokenManager.new(token: @token).revoke_all_tokens
         render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
       end
 
       def destroy_all_sessions_by_id
-        return unless auth_header
-        
         user = SessionManager.new(token: @token).current_user
         if user.admin?
           TokenManager.new(user_id: user_login_params[:user_id]).revoke_all_tokens_by_id
@@ -60,8 +54,6 @@ module Api
       end
 
       def sessions
-        return unless auth_header
-
         render json: {
           message: 'Active Sessions',
           sessions: SessionManager.new(token: @token).active_sessions

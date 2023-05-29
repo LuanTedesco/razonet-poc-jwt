@@ -28,8 +28,6 @@ module Api
       end
 
       def update
-        return unless auth_header
-
         user = SessionManager.new(token: @token).current_user
         if user&.authenticate(user_params[:password])
           user.update(user_params)
@@ -41,8 +39,6 @@ module Api
       end
 
       def destroy
-        return unless auth_header
-
         user = SessionManager.new(token: @token).current_user
         if user&.authenticate(user_params[:password])
           user.destroy
