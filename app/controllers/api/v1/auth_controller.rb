@@ -11,14 +11,14 @@ module Api
 
         if user&.authenticate(user_params[:password])
           token = TokenManager.new(payload: {
-            user_id: user.id,
-            ip_address: user_params[:ip_address],
-            date: Time.zone.now
-          }).encode_token
+                                     user_id: user.id,
+                                     ip_address: user_params[:ip_address],
+                                     date: Time.zone.now
+                                   }).encode_token
 
-          TokenManager.new(token: token).save_token
+          TokenManager.new(token:).save_token
 
-          render json: { 
+          render json: {
             user: {
               profile: UserSerializer.new(user),
               session: {
@@ -26,7 +26,7 @@ module Api
                 date: Time.zone.now
               }
             },
-            token: token
+            token:
           }, status: :accepted
         else
           render json: { message: 'Invalid username or password' }, status: :unauthorized

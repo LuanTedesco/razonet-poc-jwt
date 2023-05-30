@@ -9,6 +9,7 @@ class SessionManager < ApplicationController
     sessions = JwtAllowlist.new.active_sessions(@user_id, @token).map do |token|
       decoded_token = TokenManager.new(token: token[:token]).decoded_token
       return unless decoded_token
+
       {
         token: token[:token],
         ip_address: decoded_token.first['ip_address'],

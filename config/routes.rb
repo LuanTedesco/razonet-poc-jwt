@@ -4,6 +4,7 @@ Rails.application.routes.draw do
       resources :users, only: [:create]
       post '/login', to: 'auth#create'
       post '/login_phone', to: 'auth_phone#create'
+      post '/login_pin', to: 'auth_phone#login_pin'
       get '/logout', to: 'auth#destroy_session'
       get '/logout_all', to: 'auth#destroy_all_sessions'
       get '/sessions', to: 'auth#sessions'

@@ -1,7 +1,7 @@
 require 'redis'
 
 class JwtPin
-  KEY_PREFIX = 'pin:'
+  KEY_PREFIX = 'pin:'.freeze
 
   def initialize
     @redis = REDIS
@@ -11,6 +11,14 @@ class JwtPin
     @redis.set(key(phone), pin)
     @redis.expire(key(phone), expiration)
   end
+
+  def is_valid?(phone, pin)
+    return unless @redis.exists(key(phone)) && @redis.get(key(phone)) == pin
+
+    @redis.del(key(phone))
+  end
+
+  def revoke_pin; end
 
   def key(phone)
     KEY_PREFIX + phone
