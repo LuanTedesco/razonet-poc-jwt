@@ -10,7 +10,7 @@ class User < ApplicationRecord
 
   enum :role, user: 'user', admin: 'admin', developer: 'developer', marketing: 'marketing'
   after_initialize :set_default_role, if: :new_record?
-  before_validation :explode_phone_number
+  after_initialize :explode_phone_number, if: :new_record?
 
   def set_default_role
     self.role ||= :user
@@ -29,8 +29,8 @@ class User < ApplicationRecord
   private
 
   def validate_phone
-    unless Phonelib.valid?(self.ddi_phone.to_s + self.ddd_phone.to_s + self.phone.to_s)
-      errors.add(:phone, "Formato inválido")
-    end
+    return if Phonelib.valid?(ddi_phone.to_s + ddd_phone.to_s + phone.to_s)
+
+    errors.add(:phone, 'Formato inválido')
   end
 end

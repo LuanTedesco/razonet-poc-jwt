@@ -12,7 +12,7 @@ module Api
             profile: UserSerializer.new(SessionManager.new(token: @token).current_user),
             session: {
               ip_address: decoded_token['ip_address'],
-              date: decoded_token['date'],
+              date: decoded_token['date']
             }
           },
           token: @token
@@ -22,7 +22,7 @@ module Api
       def create
         user = User.create(user_params)
         if user.valid?
-          render json: { message: 'User created successfully', message: UserSerializer.new(user) }, status: :created
+          render json: { message: 'User created successfully', user: UserSerializer.new(user) }, status: :created
         else
           render json: { error: 'Failed to create user' }, status: :not_acceptable
         end
@@ -54,12 +54,13 @@ module Api
       private
 
       def user_params
-        params.require(:user).permit(:username, :email, :ddi_phone, :ddd_phone, :phone, :password)
+        params.require(:user).permit(:username, :email, :phone, :password)
       end
 
       def phone_is_valid?
         return true if Phonelib.valid?(user_params[:phone])
-        render: json: { message: "Phone number is invalid" }, status: :unprocessable_entity
+
+        render json: { message: 'Phone number is invalid' }, status: :unprocessable_entity
       end
     end
   end
