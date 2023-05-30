@@ -3,6 +3,7 @@ module Api
     class UsersController < ApiController
       skip_before_action :authorized, only: [:create]
       before_action :set_token, only: %i[profile update destroy]
+      before_action :phone_is_valid?, only: %i[create update]
 
       def profile
         decoded_token = TokenManager.new(token: @token).decoded_token.first
@@ -54,6 +55,11 @@ module Api
 
       def user_params
         params.require(:user).permit(:username, :email, :ddi_phone, :ddd_phone, :phone, :password)
+      end
+
+      def phone_is_valid?
+        return true if Phonelib.valid?(user_params[:phone])
+        render: json: { message: "Phone number is invalid" }, status: :unprocessable_entity
       end
     end
   end
