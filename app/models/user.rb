@@ -4,9 +4,11 @@ class User < ApplicationRecord
   has_secure_password
   validates :username, uniqueness: { case_sensitive: false }
   validates :email, uniqueness: { case_sensitive: false }
-  validates :phone, presence: true
+  validates :password, presence: true
+  validates :phone, uniqueness: { case_sensitive: false }, presence: true
 
   validate :validate_phone
+  validate :strong_password
 
   enum :role, user: 'user', admin: 'admin', developer: 'developer', marketing: 'marketing'
   after_initialize :set_default_role, if: :new_record?
@@ -32,5 +34,11 @@ class User < ApplicationRecord
     return if Phonelib.valid?(ddi_phone.to_s + ddd_phone.to_s + phone.to_s)
 
     errors.add(:phone, 'Formato inválido')
+  end
+
+  def strong_password
+    return if password.match?(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}/)
+      
+    errors.add(:password, "deve conter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial.") 
   end
 end

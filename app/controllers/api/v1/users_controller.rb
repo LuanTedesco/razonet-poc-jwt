@@ -24,7 +24,7 @@ module Api
         if user.valid?
           render json: { message: 'User created successfully', user: UserSerializer.new(user) }, status: :created
         else
-          render json: { error: 'Failed to create user' }, status: :not_acceptable
+          render json: { message: 'Failed to create user', errors: user.errors.full_messages }, status: :not_acceptable
         end
       end
 
