@@ -1,6 +1,7 @@
 require_relative "boot"
 require "rails/all"
 require 'dotenv/rails-now'
+require_relative '../app/lib/middleware/ip_request_limit'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -25,6 +26,7 @@ module RazonetPocJwt
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.autoload_paths << Rails.root.join('app', 'lib')
-    config.cache_store = :redis_cache_store, { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379') }
+    config.cache_store = :redis_cache_store, { url: ENV['REDIS_URL'] }
+    config.middleware.use IpRequestLimit
   end
 end
