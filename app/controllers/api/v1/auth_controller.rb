@@ -12,7 +12,7 @@ module Api
         if user&.authenticate(user_params[:password])
           token = TokenManager.new(payload: {
                                      user_id: user.id,
-                                     ip_address: user_params[:ip_address],
+                                     ip_address: client_ip,
                                      date: Time.zone.now
                                    }).encode_token
 
@@ -22,7 +22,7 @@ module Api
             user: {
               profile: UserSerializer.new(user),
               session: {
-                ip_address: user_params[:ip_address],
+                ip_address: client_ip,
                 date: Time.zone.now
               }
             },
@@ -63,7 +63,7 @@ module Api
       private
 
       def user_params
-        params.require(:auth).permit(:username, :password, :ip_address, :user_id)
+        params.require(:auth).permit(:username, :password, :user_id)
       end
     end
   end

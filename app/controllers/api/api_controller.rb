@@ -22,5 +22,9 @@ module Api
     def auth_header
       request.headers['Authorization']
     end
+
+    def client_ip
+      request.remote_ip
+    end
   end
 end

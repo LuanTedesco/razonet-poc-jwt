@@ -23,7 +23,7 @@ module Api
           token = generate_token(user)
           save_token(token)
 
-          render json: { message: 'Login successful', token:, user: UserSerializer.new(user) }, status: :ok
+          render json: { message: 'Login successfuly', token:, user: UserSerializer.new(user) }, status: :ok
         else
           render json: { error: 'User not found' }, status: :unprocessable_entity
         end
@@ -44,7 +44,7 @@ module Api
       def generate_token(user)
         payload = {
           user_id: user.id,
-          ip_address: user_params[:ip_address],
+          ip_address: client_ip,
           date: Time.zone.now
         }
         TokenManager.new(payload:).encode_token
@@ -55,7 +55,7 @@ module Api
       end
 
       def user_params
-        params.require(:auth).permit(:phone, :pin, :ip_address, :user_id)
+        params.require(:auth).permit(:phone, :pin, :user_id)
       end
     end
   end
