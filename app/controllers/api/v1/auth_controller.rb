@@ -4,66 +4,56 @@ module Api
   module V1
     class AuthController < ApiController
       skip_before_action :authorized, only: [:create]
+      before_action :has_timeout?, only: %i[create]
       before_action :set_token, only: %i[destroy_session destroy_all_sessions sessions]
+      before_action :user_exists?, only: [:create]
 
       def create
-        user = User.find_by(username: user_params[:username])
+        if @user&.authenticate(user_params[:password])
+          token = LoginManager.generate_token(@user, client_ip)
+          LoginManager.save_token(token)
 
-        if user&.authenticate(user_params[:password])
-          token = TokenManager.new(payload: {
-                                     user_id: user.id,
-                                     ip_address: client_ip,
-                                     date: Time.zone.now
-                                   }).encode_token
-
-          TokenManager.new(token:).save_token
-
-          render json: {
-            user: {
-              profile: UserSerializer.new(user),
-              session: {
-                ip_address: client_ip,
-                date: Time.zone.now
-              }
-            },
-            token:
-          }, status: :accepted
+          LoginManager.reset_failed_attempts(client_ip)
+          render_success('Login Successful', user: { profile: UserSerializer.new(@user) }, token:)
         else
-          render json: { message: 'Invalid username or password' }, status: :unauthorized
+          handle_invalid_credentials('Invalid Password')
         end
       end
 
       def destroy_session
         TokenManager.new(token: @token).revoke_token
-        render json: { message: 'Session Destroyed Successfully' }, status: :accepted
+        render_success('Session Destroyed Successfully')
       end
 
       def destroy_all_sessions
         TokenManager.new(token: @token).revoke_all_tokens
-        render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
+        render_success('All Sessions Destroyed Successfully')
       end
 
       def destroy_all_sessions_by_id
         user = SessionManager.new(token: @token).current_user
         if user.admin?
           TokenManager.new.revoke_all_tokens_by_id(user_params[:user_id])
-          render json: { message: 'All Sessions Destroyed Successfully' }, status: :accepted
+          render_success('All Sessions Destroyed Successfully')
         else
-          render json: { error: 'Unauthorized' }, status: :not_acceptable
+          render_error('Unauthorized')
         end
       end
 
       def sessions
-        render json: {
-          message: 'Active Sessions',
-          sessions: SessionManager.new(token: @token).active_sessions
-        }, status: :accepted
+        render_success('Active Sessions', sessions: SessionManager.new(token: @token).sessions)
       end
 
       private
 
       def user_params
         params.require(:auth).permit(:username, :password, :user_id)
+      end
+
+      def user_exists?
+        return if @user = User.find_by(username: user_params[:username])
+
+        render_error('Invalid Username')
       end
     end
   end

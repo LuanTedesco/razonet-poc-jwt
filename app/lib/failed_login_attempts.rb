@@ -19,6 +19,7 @@ class FailedLoginAttempts
 
   def reset
     @redis.del(attempts_key)
+    @redis.del(timeout_key)
   end
 
   def remaining_attempts

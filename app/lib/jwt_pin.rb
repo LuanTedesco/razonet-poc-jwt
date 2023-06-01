@@ -12,7 +12,7 @@ class JwtPin
     @redis.expire(key(phone), expiration)
   end
 
-  def is_valid?(phone, pin)
+  def is_correct?(phone, pin)
     return true if @redis.exists(key(phone)) && @redis.get(key(phone)) == pin
   end
 
