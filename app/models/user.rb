@@ -33,7 +33,7 @@ class User < ApplicationRecord
   def validate_phone
     return if Phonelib.valid?(ddi_phone.to_s + ddd_phone.to_s + phone.to_s)
 
-    errors.add(:phone, 'Formato inválido')
+    errors.add(:phone, 'invalid format')
   end
 
   def strong_password

@@ -3,7 +3,6 @@ module Api
     class UsersController < ApiController
       skip_before_action :authorized, only: [:create, :user_list]
       before_action :set_token, only: %i[profile update destroy]
-      before_action :phone_is_valid?, only: %i[create update]
 
       def profile
         decoded_token = TokenManager.new(token: @token).decoded_token.first
@@ -23,7 +22,7 @@ module Api
           render_success('User created successfully', user: UserSerializer.new(user))
         else
           
-          render_error('Failed to create user', user.errors.full_messages)
+          render_error('Failed to create user', errors: user.errors.full_messages)
         end
       end
 
@@ -34,7 +33,7 @@ module Api
 
           render_success('User updated successfully', user: UserSerializer.new(user))
         else
-          render_error('Failed to update user', user.errors.full_messages)
+          render_error('Failed to update user', errors: user.errors.full_messages)
         end
       end
 
@@ -58,12 +57,6 @@ module Api
 
       def user_params
         params.require(:user).permit(:username, :email, :phone, :password)
-      end
-
-      def phone_is_valid?
-        return true if Phonelib.valid?(user_params[:phone])
-
-        render_error('Phone number is invalid')
       end
 
       def current_user

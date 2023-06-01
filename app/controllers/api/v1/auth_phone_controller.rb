@@ -3,10 +3,11 @@ module Api
     class AuthPhoneController < ApiController
       before_action :has_timeout?, only: %i[login_pin]
       before_action :verify_pin, only: %i[login_pin]
+      before_action :user_exists?, only: %i[create_pin login_pin]
       skip_before_action :authorized, only: %i[create_pin login_pin]
 
       def create_pin
-        if valid_phone? && user_exists?
+        if @user && valid_phone?
           pin = generate_pin
           save_pin(user_params[:phone], pin)
           render_success('PIN sent by WhatsApp', pin:)
@@ -16,14 +17,14 @@ module Api
       end
 
       def login_pin
-        if user_exists?
-          token = LoginManager.new.generate_token(user_exists?, client_ip)
+        if @user
+          token = LoginManager.generate_token(@user, client_ip)
           LoginManager.save_token(token)
-
           LoginManager.reset_failed_attempts(client_ip)
+          JwtPin.new.revoke_pin(user_params[:phone])
           render_success(
             'Login successful', token:,
-            user: UserSerializer.new(user_exists?)
+            user: UserSerializer.new(@user)
           )
         else
           handle_invalid_credentials('Invalid PIN or phone number')
@@ -39,7 +40,7 @@ module Api
       def verify_pin
         return if JwtPin.new.is_correct?(user_params[:phone], user_params[:pin])
 
-        return_error('Invalid PIN or phone number')
+        render_error('Invalid PIN or phone number')
       end
 
       def generate_pin
@@ -51,7 +52,9 @@ module Api
       end
 
       def user_exists?
-        User.find_by(phone: user_params[:phone].slice(4, 9))
+        return if @user = User.find_by(phone: user_params[:phone].slice(4, 9))
+
+        render_error('Invalid Phone Number')
       end
 
       def valid_phone?

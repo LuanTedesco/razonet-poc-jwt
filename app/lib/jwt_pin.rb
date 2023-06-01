@@ -13,10 +13,12 @@ class JwtPin
   end
 
   def is_correct?(phone, pin)
-    return true if @redis.exists(key(phone)) && @redis.get(key(phone)) == pin
+    @redis.get(key(phone)).to_i == pin.to_i
   end
 
-  def revoke_pin; end
+  def revoke_pin(phone)
+    @redis.del(key(phone))
+  end
 
   def key(phone)
     KEY_PREFIX + phone
