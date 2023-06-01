@@ -1,6 +1,6 @@
 class IpRequestLimit
-  TIME_WINDOW = 60 # 1 minute
-  REQUEST_LIMIT = 100 # 100 requests per minute
+  TIME_WINDOW = 2
+  REQUEST_LIMIT = 1
 
   def initialize(app)
     @app = app

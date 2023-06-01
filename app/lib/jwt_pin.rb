@@ -13,9 +13,7 @@ class JwtPin
   end
 
   def is_valid?(phone, pin)
-    return unless @redis.exists(key(phone)) && @redis.get(key(phone)) == pin
-
-    @redis.del(key(phone))
+    return true if @redis.exists(key(phone)) && @redis.get(key(phone)) == pin
   end
 
   def revoke_pin; end
