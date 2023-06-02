@@ -52,7 +52,7 @@ module Api
       end
 
       def user_exists?
-        return if @user == User.find_by(username: user_params[:username])
+        return if @user = User.find_by(username: user_params[:username])
 
         render_error('Invalid Username')
       end
