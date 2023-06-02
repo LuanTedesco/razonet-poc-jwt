@@ -22,6 +22,10 @@ class User < ApplicationRecord
     self.role == 'admin'
   end
 
+  def is_blocked?
+    self.blocked == true
+  end
+
   def explode_phone_number
     self.ddi_phone = phone.slice(0, 2)
     self.ddd_phone = phone.slice(2, 2)

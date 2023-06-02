@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_29_172905) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_02_112502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -28,6 +28,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_29_172905) do
     t.string "ddi_phone", limit: 3, default: "55", null: false
     t.string "ddd_phone", limit: 2, null: false
     t.string "phone", limit: 9, null: false
+    t.boolean "blocked", default: false
   end
 
 end
