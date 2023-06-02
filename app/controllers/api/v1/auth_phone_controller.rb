@@ -3,16 +3,18 @@ module Api
     class AuthPhoneController < ApiController
       before_action :has_timeout?, only: %i[login_pin]
       before_action :verify_pin, only: %i[login_pin]
+      before_action :valid_phone?, only: %i[create_pin login_pin]
       before_action :user_exists?, only: %i[create_pin login_pin]
+      before_action :login_is_blocked?, only: %i[create_pin login_pin]
       skip_before_action :authorized, only: %i[create_pin login_pin]
 
       def create_pin
-        if @user && valid_phone?
+        if @user
           pin = generate_pin
           save_pin(user_params[:phone], pin)
           render_success('PIN sent by WhatsApp', pin:)
         else
-          handle_invalid_credentials('Invalid phone number')
+          render_error('Error sending PIN')
         end
       end
 
@@ -27,7 +29,7 @@ module Api
             user: UserSerializer.new(@user)
           )
         else
-          handle_invalid_credentials('Invalid PIN or phone number')
+          handle_invalid_credentials('Invalid PIN', @user.id)
         end
       end
 
@@ -40,7 +42,7 @@ module Api
       def verify_pin
         return if JwtPin.new.is_correct?(user_params[:phone], user_params[:pin])
 
-        render_error('Invalid PIN or phone number')
+        render_error('Invalid PIN')
       end
 
       def generate_pin
@@ -54,11 +56,19 @@ module Api
       def user_exists?
         return if @user = User.find_by(phone: user_params[:phone].slice(4, 9))
 
-        render_error('Invalid Phone Number')
+        render_error('User not found')
       end
 
       def valid_phone?
-        Phonelib.valid?(user_params[:phone])
+        return if Phonelib.valid?(user_params[:phone])
+
+        render_error('Invalid Phone Number')
+      end
+
+      def login_is_blocked?
+        return unless @user.is_blocked?
+  
+        render_error('Account BLOCKED because due to too many attempts. Please, contact support.')
       end
     end
   end

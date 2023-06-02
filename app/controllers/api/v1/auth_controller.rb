@@ -7,6 +7,7 @@ module Api
       before_action :has_timeout?, only: %i[create]
       before_action :set_token, only: %i[destroy_session destroy_all_sessions sessions]
       before_action :user_exists?, only: [:create]
+      before_action :login_is_blocked?, only: [:create]
 
       def create
         if @user&.authenticate(user_params[:password])
@@ -16,7 +17,7 @@ module Api
           LoginManager.reset_failed_attempts(client_ip)
           render_success('Login Successful', user: { profile: UserSerializer.new(@user) }, token:)
         else
-          handle_invalid_credentials('Invalid Password')
+          handle_invalid_credentials('Invalid Password', @user.id)
         end
       end
 
@@ -54,6 +55,12 @@ module Api
         return if @user = User.find_by(username: user_params[:username])
 
         render_error('Invalid Username')
+      end
+
+      def login_is_blocked?
+        return unless @user.is_blocked?
+  
+        render_error('Account BLOCKED because due to too many attempts. Please, contact support.')
       end
     end
   end

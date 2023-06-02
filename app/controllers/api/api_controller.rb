@@ -44,10 +44,11 @@ module Api
       )
     end
 
-    def handle_invalid_credentials(message)
+    def handle_invalid_credentials(message, user_id)
       LoginManager.increment_failed_attempts(client_ip)
-      LoginManager.set_timeout(client_ip)
+      LoginManager.set_timeout(user_id, client_ip)
       return if has_timeout?
+
       render_error(
         message, 
         remaining_attempts: LoginManager.remaining_attempts(client_ip)
