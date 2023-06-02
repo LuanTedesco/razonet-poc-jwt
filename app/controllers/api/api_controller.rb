@@ -22,22 +22,22 @@ module Api
     def auth_header
       request.headers['Authorization']
     end
-  
+
     def client_ip
       request.remote_ip
     end
 
     def render_success(message, options = {})
-      render json: { message: message }.merge(options), status: :ok
+      render json: { message: }.merge(options), status: :ok
     end
-  
+
     def render_error(message, options = {})
       render json: { error: message }.merge(options), status: :unprocessable_entity
     end
 
     def has_timeout?
       return unless FailedLoginAttempts.new(user_ip: client_ip).exceeded?
-  
+
       render_error(
         'Too many failed login attempts',
         timeout_seconds: FailedLoginAttempts.new(user_ip: client_ip).timeout
@@ -50,7 +50,7 @@ module Api
       return if has_timeout?
 
       render_error(
-        message, 
+        message,
         remaining_attempts: LoginManager.remaining_attempts(client_ip)
       )
     end

@@ -27,9 +27,7 @@ class FailedLoginAttempts
     attempts = @redis.get(attempts_key).to_i
 
     timeouts.each do |t|
-      if attempts <= t
-        return t - attempts
-      end
+      return t - attempts if attempts <= t
     end
   end
 
@@ -38,7 +36,7 @@ class FailedLoginAttempts
   end
 
   def exceeded?
-    return true if @redis.ttl(timeout_key) > 0
+    return true if @redis.ttl(attempts_key).positive?
   end
 
   def set_login_timeout

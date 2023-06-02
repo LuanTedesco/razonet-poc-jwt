@@ -1,7 +1,6 @@
 class LoginManager
-
   def self.set_timeout(user_id, user_ip)
-    attempts = FailedLoginAttempts.new(user_ip: user_ip).attempts
+    attempts = FailedLoginAttempts.new(user_ip:).attempts
     case attempts
     when 5
       set_login_timeout(user_ip, 30.minutes)
@@ -13,16 +12,16 @@ class LoginManager
       if attempts >= 20
         user = User.find(user_id)
         user.update_attribute(:blocked, true)
-      end      
+      end
     end
   end
 
   def self.generate_token(user, ip_address)
     TokenManager.new(payload: {
-      user_id: user.id,
-      ip_address: ip_address,
-      date: Time.zone.now
-    }).encode_token
+                       user_id: user.id,
+                       ip_address:,
+                       date: Time.zone.now
+                     }).encode_token
   end
 
   def self.save_token(token)
@@ -41,9 +40,7 @@ class LoginManager
     FailedLoginAttempts.new(user_ip:).reset
   end
 
-  private
-
   def self.set_login_timeout(user_ip, timeout)
-    FailedLoginAttempts.new(user_ip: user_ip, timeout: timeout.to_i).set_login_timeout
+    FailedLoginAttempts.new(user_ip:, timeout: timeout.to_i).set_login_timeout
   end
 end

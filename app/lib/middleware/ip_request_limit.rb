@@ -29,12 +29,10 @@ class IpRequestLimit
     key = "ip_request_limit:#{ip_address}"
     request_timestamps = @redis.zrangebyscore(key, current_timestamp - TIME_WINDOW, current_timestamp)
 
-    if request_timestamps.count >= REQUEST_LIMIT
-      return true
-    else
-      @redis.zadd(key, current_timestamp, current_timestamp)
-      @redis.expire(key, TIME_WINDOW)
-      return false
-    end
+    return true if request_timestamps.count >= REQUEST_LIMIT
+
+    @redis.zadd(key, current_timestamp, current_timestamp)
+    @redis.expire(key, TIME_WINDOW)
+    false
   end
 end

@@ -1,19 +1,19 @@
 module Api
   module V1
     class UsersController < ApiController
-      skip_before_action :authorized, only: [:create, :user_list]
+      skip_before_action :authorized, only: %i[create user_list]
       before_action :set_token, only: %i[profile update destroy]
 
       def profile
         decoded_token = TokenManager.new(token: @token).decoded_token.first
         render_success('User', user: {
-          profile:UserSerializer.new(current_user), 
-          session: {
-            ip_address: decoded_token['ip_address'], 
-            date: decoded_token['date'] 
-          }},
-          token: @token
-        )
+                                 profile: UserSerializer.new(current_user),
+                                 session: {
+                                   ip_address: decoded_token['ip_address'],
+                                   date: decoded_token['date']
+                                 }
+                               },
+                               token: @token)
       end
 
       def create
@@ -21,7 +21,7 @@ module Api
         if user.valid?
           render_success('User created successfully', user: UserSerializer.new(user))
         else
-          
+
           render_error('Failed to create user', errors: user.errors.full_messages)
         end
       end

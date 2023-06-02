@@ -24,10 +24,7 @@ module Api
           LoginManager.save_token(token)
           LoginManager.reset_failed_attempts(client_ip)
           JwtPin.new.revoke_pin(user_params[:phone])
-          render_success(
-            'Login successful', token:,
-            user: UserSerializer.new(@user)
-          )
+          render_success('Login successful', token:, user: UserSerializer.new(@user))
         else
           handle_invalid_credentials('Invalid PIN', @user.id)
         end
@@ -67,7 +64,7 @@ module Api
 
       def login_is_blocked?
         return unless @user.is_blocked?
-  
+
         render_error('Account BLOCKED because due to too many attempts. Please, contact support.')
       end
     end

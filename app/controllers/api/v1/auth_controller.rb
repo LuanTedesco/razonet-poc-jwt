@@ -52,14 +52,14 @@ module Api
       end
 
       def user_exists?
-        return if @user = User.find_by(username: user_params[:username])
+        return if @user == User.find_by(username: user_params[:username])
 
         render_error('Invalid Username')
       end
 
       def login_is_blocked?
         return unless @user.is_blocked?
-  
+
         render_error('Account BLOCKED because due to too many attempts. Please, contact support.')
       end
     end
