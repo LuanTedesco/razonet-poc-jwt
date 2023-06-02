@@ -51,7 +51,7 @@ module Api
       end
 
       def user_exists?
-        return if @user = User.find_by(phone: user_params[:phone].slice(4, 9))
+        return if @user = User.find_by(phone: user_params[:phone].to_s.slice(4, 9))
 
         render_error('User not found')
       end
