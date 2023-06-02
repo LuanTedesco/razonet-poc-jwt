@@ -20,9 +20,7 @@ class JwtAllowlist
     tokens = @redis.keys("#{KEY_PREFIX + user_id.to_s}:*")
 
     tokens.each do |token|
-      if token.split(':').last != current_token
-        @redis.del(token)
-      end
+      @redis.del(token) if token.split(':').last != current_token
     end
   end
 
@@ -43,12 +41,12 @@ class JwtAllowlist
     tokens = @redis.keys("#{KEY_PREFIX + user_id.to_s}:*")
 
     tokens.each do |token|
-      if token.split(':').last != current_token
-        session = {
-          token: token.split(':').last
-        }
-        sessions << session
-      end
+      next unless token.split(':').last != current_token
+
+      session = {
+        token: token.split(':').last
+      }
+      sessions << session
     end
 
     sessions
@@ -57,6 +55,6 @@ class JwtAllowlist
   private
 
   def key(user_id, token)
-    KEY_PREFIX + user_id.to_s +  ':' + token.to_s
+    "#{KEY_PREFIX}#{user_id}:#{token}"
   end
 end

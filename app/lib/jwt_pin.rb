@@ -21,6 +21,6 @@ class JwtPin
   end
 
   def key(phone)
-    KEY_PREFIX + phone.to_s
+    "#{KEY_PREFIX}#{phone}"
   end
 end
