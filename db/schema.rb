@@ -10,25 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_02_112502) do
+ActiveRecord::Schema[7.0].define(version: 20_230_602_112_502) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension 'plpgsql'
 
   # Custom types defined in this database.
   # Note that some types may not work with other database engines. Be careful if changing database.
-  create_enum "role", ["user", "admin", "developer", "marketing"]
+  create_enum 'role', %w[user admin developer marketing]
 
-  create_table "users", force: :cascade do |t|
-    t.string "username"
-    t.string "email"
-    t.string "password_digest"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.enum "role", default: "user", null: false, enum_type: "role"
-    t.string "ddi_phone", limit: 3, default: "55", null: false
-    t.string "ddd_phone", limit: 2, null: false
-    t.string "phone", limit: 9, null: false
-    t.boolean "blocked", default: false
+  create_table 'users', force: :cascade do |t|
+    t.string 'username'
+    t.string 'email'
+    t.string 'password_digest'
+    t.datetime 'created_at', null: false
+    t.datetime 'updated_at', null: false
+    t.enum 'role', default: 'user', null: false, enum_type: 'role'
+    t.string 'ddi_phone', limit: 3, default: '55', null: false
+    t.string 'ddd_phone', limit: 2, null: false
+    t.string 'phone', limit: 9, null: false
+    t.boolean 'blocked', default: false
   end
-
 end
