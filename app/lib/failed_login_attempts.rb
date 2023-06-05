@@ -51,10 +51,10 @@ class FailedLoginAttempts
   private
 
   def attempts_key
-    ATTEMPTS_KEY_PREFIX + @user_ip.to_s
+    "#{ATTEMPTS_KEY_PREFIX}#{@user_ip}"
   end
 
   def timeout_key
-    TIMEOUT_KEY_PREFIX + @user_ip.to_s
+    "#{TIMEOUT_KEY_PREFIX}#{@user_ip}"
   end
 end
