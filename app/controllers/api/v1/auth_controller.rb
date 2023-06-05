@@ -42,7 +42,7 @@ module Api
       end
 
       def sessions
-        render_success('Active Sessions', sessions: SessionManager.new(token: @token).sessions)
+        render_success('Active Sessions', sessions: SessionManager.new(token: @token).active_sessions)
       end
 
       private

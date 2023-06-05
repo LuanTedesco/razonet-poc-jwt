@@ -2,16 +2,18 @@ class IpRequestLimit
   TIME_WINDOW = 2
   REQUEST_LIMIT = 1
 
-  def initialize(app)
+  def initialize(app, options = {})
     @app = app
     @redis = REDIS
+    @limit_routes = options[:routes]
   end
 
   def call(env)
     request = Rack::Request.new(env)
     ip_address = request.ip
+    route = request.path_info
 
-    if too_many_requests?(ip_address)
+    if route_matches_limit_route?(route) && too_many_requests?(ip_address)
       return [
         429,
         { 'Content-Type' => 'application/json' },
@@ -23,6 +25,10 @@ class IpRequestLimit
   end
 
   private
+
+  def route_matches_limit_route?(route)
+    @limit_routes.nil? || @limit_routes.include?(route)
+  end
 
   def too_many_requests?(ip_address)
     current_timestamp = Time.now.to_i

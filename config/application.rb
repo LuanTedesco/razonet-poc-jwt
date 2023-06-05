@@ -27,6 +27,6 @@ module RazonetPocJwt
     config.api_only = true
     config.autoload_paths << Rails.root.join('app', 'lib')
     config.cache_store = :redis_cache_store, { url: ENV['REDIS_URL'] }
-    config.middleware.use IpRequestLimit
+    config.middleware.use IpRequestLimit, routes: ['/api/auth/login', '/api/auth/register', '/api/auth/generate_pin', '/api/auth/login_pin', '/api/auth/users']
   end
 end
